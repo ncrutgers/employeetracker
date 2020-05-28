@@ -1,6 +1,7 @@
+// Required dependencies
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-
+// Create database connection with credentials
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -16,7 +17,7 @@ connection.connect(function(err) {
     runSearch();
 });
 
-// Start inquire prompts
+// Start inquire prompts list
 function runSearch() {
   inquirer
     .prompt({
