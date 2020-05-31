@@ -31,7 +31,8 @@ function runSearch() {
         "View departments",
         "View roles",
         "View employees",
-        "Update an employee's role"
+        "Update an employee's role",
+        "Exit"
       ]
     })
     .then(function(answer) {
@@ -62,7 +63,11 @@ function runSearch() {
         
       case "Update an employee's role":
         updateEmployeeRole();
-        break;  
+        break;
+        
+      case "Exit":
+        connection.end();
+        break;    
       }
     });
 }
