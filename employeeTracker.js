@@ -95,37 +95,65 @@ function addDepartment() {
 
 // Function adds a role to database
 function addRole() {
+
+  var query = "SELECT * FROM department";
+  connection.query(query, function(err, results) {
+    if (err) throw err;
+
+
     inquirer
-        .prompt([
-            {
-                name: "title",
-                type: "input",
-                message: "What is the role title that you would like to add?"
-            },
-            {
-                name: "salary",
-                type: "input",
-                message: "What is the salary associated with the role title?"
+    .prompt([
+        {
+            name: "title",
+            type: "input",
+            message: "What is the role title that you would like to add?"
+        },
+        {
+            name: "salary",
+            type: "input",
+            message: "What is the salary associated with the role title?"
 
-            },
-            {
-                name: "departmentId",
-                type: "input",
-                message: "What is the department id?"
+        },
+        {
+            name: "department",
+            type: "list",
+            message: "What is the department name?",
+            choices: function() {
+              var deptNames = [];
+              for (var i = 0; i < results.length; i++){
+                deptNames.push(results[i].name);
+              }
+              return deptNames;
             }
-        ])
-        .then(function(answer) {
-            connection.query("INSERT INTO role SET ?", {
-                title: answer.title,
-                salary: answer.salary,
-                department_id: answer.departmentId
+        }
+    ])
+    //  Retrieve department id of chosen department name
+    .then(function(answer) {
+        var chosenDeptName = answer.department;
+        //console.log(answer.department)
+        var query = "SELECT id FROM department WHERE name=?";
+        connection.query(query, [chosenDeptName], function(err, result) {
+          if (err) throw err;
+          var deptID = result[0].id;
+          // Set values of prompts and query to department table
+          connection.query("INSERT INTO role SET ?", {
+            title: answer.title,
+            salary: answer.salary,
+            department_id: deptID
 
-            }, function(err) {
-                if (err) throw err;
-                console.log("You successfully added a role.");
-                runSearch();                
-            });
-        });
+          }, function(err) {                      
+              if (err) throw err;
+              console.log("You successfully added a role.");
+              runSearch();                
+          });
+          
+
+        }); // end of inner connection query
+    }); // end of prompt then promise
+  }); // end of outer connection query
+
+
+
 }
 
 // Function adds an employee to database
