@@ -249,6 +249,7 @@ function viewDepartments() {
   var query = "SELECT * FROM department";
 
   connection.query(query, function(err, res) {
+    if (err) throw err;
       //console.log(res);
       for (var i = 0; i < res.length; i++) {
       console.log("Dept ID: " + res[i].id + " || Name: " + res[i].name);
@@ -263,6 +264,7 @@ function viewRoles() {
   var query = "SELECT * FROM role";
 
   connection.query(query, function(err, res) {
+    if (err) throw err;
       //console.log(res);
     for (var i = 0; i < res.length; i++) {
       console.log("Role ID: " + res[i].id + " || Title: " + res[i].title + " || Salary: " + res[i].salary + " || Dept ID: " + res[i].department_id);
@@ -277,6 +279,7 @@ function viewEmployees() {
     var query = "SELECT * FROM employee";
 
     connection.query(query, function(err, res) {
+      if (err) throw err;
         //console.log(res);
       for (var i = 0; i < res.length; i++) {
         console.log("Employee ID: " + res[i].id + " || First Name: " + res[i].first_name + " || Last Name: " + res[i].last_name + " || Role ID: " + res[i].role_id + " || Manager ID: " + res[i].manager_id);
@@ -284,3 +287,36 @@ function viewEmployees() {
       runSearch();
     });    
 }
+
+// Remove employee
+function removeEmployee() {
+
+  connection.query("SELECT first_name, last_name FROM employee", function(err, result){
+    if (err) throw err;
+  
+  inquirer
+    .prompt([
+      {
+        name: "employee",
+        type: "list",
+        message: "What is the employee's name?",
+        choices: function() {
+          var employees = [];
+            for (var i = 0; i < result.length; i++) {
+              employees.push(`${result[i].first_name} ${result[i].last_name}`);
+            }
+            return employees;
+        }
+      }
+    ])
+    .then(function(answer) {
+      // Deletes employee that matches full name chosen
+      var employeeNameArr = answer.employee.split(" ");
+      connection.query("DELETE FROM employee WHERE first_name=? AND last_name=?", [employeeNameArr[0], employeeNameArr[1]], function(err, answer) {
+        if (err) throw err;
+        console.log("Employee successfully deleted.");
+      });
+    });
+  });
+}
+
