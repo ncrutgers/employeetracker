@@ -159,7 +159,7 @@ function addEmployee() {
   // Query to retrieve all titles from role table
   connection.query("SELECT title FROM role", function(err, titleResult) {
     if (err) throw err;
-    // Query to retrieve all names with titles from employee/role tablesS
+    // Query to retrieve all employee names with titles from role table
     connection.query("SELECT employee.first_name, employee.last_name, role.title FROM employee JOIN role ON role.id = employee.role_id", function(err, employeeResult) {
       if (err) throw err;    
 
@@ -216,7 +216,13 @@ function addEmployee() {
             var managerNameArr = answer.manager.split(" ");
             connection.query("SELECT id FROM employee WHERE first_name=? AND last_name=?", [managerNameArr[0], managerNameArr[1]], function(err, employeeIdResult) {
               if (err) throw err;
-              var employeeID = employeeIdResult[0].id;               
+              // if no employee manager chosen set null to employeeID of employee
+              var employeeID;
+              if (!employeeIdResult.length) {
+                employeeID = NULL;
+              } else {                
+                employeeID = employeeIdResult[0].id;
+              }              
 
               // Set values of prompts and query to employee table
               connection.query("INSERT INTO employee SET ?", {
