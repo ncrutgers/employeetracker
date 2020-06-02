@@ -99,9 +99,8 @@ function addDepartment() {
 
 // Function adds a role to database
 function addRole() {
-  // Query to retrieve selection of department
-  var query = "SELECT * FROM department";
-  connection.query(query, function(err, results) {
+  // Query to retrieve all of department table
+  connection.query("SELECT * FROM department", function(err, results) {
     if (err) throw err;
 
     inquirer
@@ -130,7 +129,7 @@ function addRole() {
           }
         }
       ])
-      //  Retrieve department id of chosen department name
+      // Retrieves department id of chosen department name
       .then(function(answer) {
           var chosenDeptName = answer.department;
           //console.log(answer.department)
@@ -157,98 +156,96 @@ function addRole() {
 
 // Function adds an employee to database
 function addEmployee() {
-
-  var query1 = "SELECT title FROM role"; 
-  connection.query(query1, function(err, titleResult) {
+  // Query to retrieve all titles from role table
+  connection.query("SELECT title FROM role", function(err, titleResult) {
     if (err) throw err;
-
-    var query2 = "SELECT employee.first_name, employee.last_name, role.title FROM employee JOIN role ON role.id = employee.role_id"; 
-    connection.query(query2, function(err, employeeResult) {
+    // Query to retrieve all names with titles from employee/role tablesS
+    connection.query("SELECT employee.first_name, employee.last_name, role.title FROM employee JOIN role ON role.id = employee.role_id", function(err, employeeResult) {
       if (err) throw err;    
 
       inquirer
-      .prompt([
-        {
-            name: "first",
-            type: "input",
-            message: "What is the employee's first name?"
-        },
-        {
-            name: "last",
-            type: "input",
-            message: "What is the employee's last name?"
+        .prompt([
+          {
+              name: "first",
+              type: "input",
+              message: "What is the employee's first name?"
+          },
+          {
+              name: "last",
+              type: "input",
+              message: "What is the employee's last name?"
 
-        },
-        {
-            name: "role",
-            type: "list",
-            message: "What is the employee's title?",
-            choices: function() {
-              var roles = [];
-              for (var i = 0; i < titleResult.length; i++){
-                roles.push(titleResult[i].title);
-              }             
-              return roles;
-            }
-        },
-        {
-            name: "manager",
-            type: "list",
-            message: "What is the manager's id?",
-            choices: function() {
-              var employees = [];
-              for (var i = 0; i < employeeResult.length; i++){
-                var employee = `${employeeResult[i].first_name} ${employeeResult[i].last_name} - ${employeeResult[i].title}`;
-                employees.push(employee);
+          },
+          {
+              name: "role",
+              type: "list",
+              message: "What is the employee's title?",
+              choices: function() {
+                var roles = [];
+                for (var i = 0; i < titleResult.length; i++){
+                  roles.push(titleResult[i].title);
+                }             
+                return roles;
               }
-              return employees;
-            }
-        }
-      ])
-      .then(function(answer) {
+          },
+          {
+              name: "manager",
+              type: "list",
+              message: "Who is the Manager?",
+              choices: function() {
+                var employees = [];
+                for (var i = 0; i < employeeResult.length; i++){
+                  var employee = `${employeeResult[i].first_name} ${employeeResult[i].last_name} - ${employeeResult[i].title}`;
+                  employees.push(employee);
+                }
+                employees.push("None");
+                return employees;
+              }
+          }
+        ])
+        .then(function(answer) {
+          console.log(answer);
 
-        // Retrieve role id of chosen role title
-        connection.query("SELECT id FROM role WHERE title=?", [answer.role], function(err, roleIdResult) {
-          if (err) throw err;
-          var roleID = roleIdResult[0].id;          
-
-          // Retrieve id of chosen employee's manager
-          var managerNameArr = answer.manager.split(" ");
-          connection.query("SELECT id FROM employee WHERE first_name=? AND last_name=?", [managerNameArr[0], managerNameArr[1]], function(err, employeeIdResult) {
+          // Retrieve role id of chosen role title
+          connection.query("SELECT id FROM role WHERE title=?", [answer.role], function(err, roleIdResult) {
             if (err) throw err;
-            var employeeID = employeeIdResult[0].id; 
+            
+            var roleID = roleIdResult[0].id;          
 
-            // Set values of prompts and query to employee table
-            connection.query("INSERT INTO employee SET ?", {
-              first_name: answer.first,
-              last_name: answer.last,
-              role_id: roleID,
-              manager_id: employeeID
+            // Retrieve id of chosen employee's manager
+            var managerNameArr = answer.manager.split(" ");
+            connection.query("SELECT id FROM employee WHERE first_name=? AND last_name=?", [managerNameArr[0], managerNameArr[1]], function(err, employeeIdResult) {
+              if (err) throw err;
+              var employeeID = employeeIdResult[0].id;               
 
-            }, function(err) {
-                if (err) throw err;
-                console.log("You successfully added an employee.");
-                runSearch();                
-            });
+              // Set values of prompts and query to employee table
+              connection.query("INSERT INTO employee SET ?", {
+                first_name: answer.first,
+                last_name: answer.last,
+                role_id: roleID,
+                manager_id: employeeID
 
-          }); // end of employee id query
+              }, function(err) {
+                  if (err) throw err;
+                  console.log("You successfully added an employee.");
+                  runSearch();                
+              });
 
-        }); // end of role id query
+            }); // end of employee id query
 
-      }); // end of prompt then promise
+          }); // end of role id query
+
+        }); // end of prompt then promise
 
     }); // end of inner query
 
   }); // end of outer query
 }
 
-
 // Search all from department table
 function viewDepartments() {
-     
-  var query = "SELECT * FROM department";
 
-  connection.query(query, function(err, res) {
+  connection.query("SELECT * FROM department", function(err, res) {
     if (err) throw err;
       //console.log(res);
       for (var i = 0; i < res.length; i++) {
@@ -260,10 +257,8 @@ function viewDepartments() {
 
 // Search all from role table
 function viewRoles() {
-     
-  var query = "SELECT * FROM role";
-
-  connection.query(query, function(err, res) {
+  
+  connection.query("SELECT * FROM role", function(err, res) {
     if (err) throw err;
       //console.log(res);
     for (var i = 0; i < res.length; i++) {
@@ -275,10 +270,8 @@ function viewRoles() {
 
 // Search all from employee table
 function viewEmployees() {
-     
-    var query = "SELECT * FROM employee";
-
-    connection.query(query, function(err, res) {
+    // Query to retrieve all employees from employee table
+    connection.query("SELECT * FROM employee", function(err, res) {
       if (err) throw err;
         //console.log(res);
       for (var i = 0; i < res.length; i++) {
@@ -290,7 +283,7 @@ function viewEmployees() {
 
 // Remove employee
 function removeEmployee() {
-
+  // Query to retrieve employee names from employee table
   connection.query("SELECT first_name, last_name FROM employee", function(err, result){
     if (err) throw err;
   
@@ -315,8 +308,57 @@ function removeEmployee() {
       connection.query("DELETE FROM employee WHERE first_name=? AND last_name=?", [employeeNameArr[0], employeeNameArr[1]], function(err, answer) {
         if (err) throw err;
         console.log("Employee successfully deleted.");
+        runSearch();
       });
     });
   });
 }
 
+// Function to update employee's role
+function updateEmployeeRole() {
+   // Query to retrieve employee names from employee table
+  connection.query("SELECT first_name, last_name FROM employee", function(err, employeeResult) {
+    if (err) throw err;
+    
+    // Query to retrieve titles from role table
+    connection.query("SELECT title FROM role", function(err, roleResult) {
+      if (err) throw err;
+
+      inquirer
+        .prompt([{
+          name: "employee",
+          type: "list",
+          message: "What employee's role would you like to update?",
+          choices: function() {
+            var employees = [];
+            for (var i = 0; i < employeeResult.length; i++) {
+              employees.push(`${employeeResult[i].first_name} ${employeeResult[i].last_name}`);
+            }
+            return employees;
+          }
+        },
+        {
+          name: "title",
+          type: "list",
+          message: "Choose new role",
+          choices: function() {
+            var titles = [];
+            for (var i = 0; i < roleResult.length; i++) {
+              titles.push(roleResult[i].title);
+            }
+            return titles;
+          }
+        }
+      ])
+      .then(function(answer) {
+        // Update employee
+        var employeeNameArr = answer.employee.split(" ");
+        connection.query("UPDATE employee SET role_id=(SELECT id FROM role WHERE title=?) WHERE employee.first_name=? AND employee.last_name=?", [answer.title, employeeNameArr[0], employeeNameArr[1]], function(err, result) {
+          if (err) throw err;
+          console.log("Employee's role successfully updated.");
+          runSearch();
+        }); 
+      });
+    });
+  });  
+}
